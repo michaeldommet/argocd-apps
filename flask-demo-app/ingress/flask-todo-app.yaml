@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-web
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}' # Creates a NEG after an Ingress is created
+spec:
+  ports:
+  - port: 8080
+    targetPort: 5000
+  selector:
+    app: todo
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo
+spec:
+  selector:
+    matchLabels:
+      app: todo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: todo
+    spec:
+      containers:
+      - image: michaeldommet/flask-app:v3
+        name: todo
+        env:
+          # Use secret in real usage
+        - name: MYSQL_USER
+          value: "root"
+        - name: MYSQL_PASSWORD
+          value: "password"
+        - name: MYSQL_SERVER
+          value: "mysql.default.svc"
+        - name: PORT
+          value: "5000"
+        ports:
+        - containerPort: 5000
+          name: todo
