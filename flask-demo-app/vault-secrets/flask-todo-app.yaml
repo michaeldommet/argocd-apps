@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-web
+spec:
+  ports:
+  - port: 8080
+    targetPort: 5000
+  selector:
+    app: todo
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo
+spec:
+  selector:
+    matchLabels:
+      app: todo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: todo
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/role: 'todo-app'
+        vault.hashicorp.com/agent-inject-secret-config: 'secret/data/todoapp/config'
+        # Environment variable export template
+        vault.hashicorp.com/agent-inject-template-config: |
+          {{ with secret "secret/data/todoapp/config" -}}
+            export MYSQL_USER="{{ .Data.data.mysql_user }}"
+            export MYSQL_ROOT_PASSWORD="{{ .Data.data.root_password }}"
+            export MYSQL_SERVER="{{ .Data.data.mysql_server }}"
+          {{- end }}
+    spec:
+      containers:
+      - image: michaeldommet/flask-app:v3
+        name: todo
+        args:
+          ['sh', '-c', 'source /vault/secrets/config && <entrypoint script>']
+        env:
+        - name: PORT
+          value: "5000"
+        ports:
+        - containerPort: 5000
+          name: todo
