@@ -6,8 +6,8 @@ metadata:
     cloud.google.com/neg: '{"ingress": true}' # Creates a NEG after an Ingress is created
 spec:
   ports:
-  - port: 8080
-    targetPort: 5000
+    - port: 80
+      targetPort: 5000
   selector:
     app: todo
   type: ClusterIP
@@ -22,24 +22,25 @@ spec:
       app: todo
   strategy:
     type: Recreate
+  replicas: 2
   template:
     metadata:
       labels:
         app: todo
     spec:
       containers:
-      - image: michaeldommet/flask-app:v3
-        name: todo
-        env:
-          # Use secret in real usage
-        - name: MYSQL_USER
-          value: "root"
-        - name: MYSQL_PASSWORD
-          value: "password"
-        - name: MYSQL_SERVER
-          value: "mysql.default.svc"
-        - name: PORT
-          value: "5000"
-        ports:
-        - containerPort: 5000
+        - image: michaeldommet/flask-app:v3
           name: todo
+          env:
+            # Use secret in real usage
+            - name: MYSQL_USER
+              value: "root"
+            - name: MYSQL_PASSWORD
+              value: "password"
+            - name: MYSQL_SERVER
+              value: "mysql.default.svc"
+            - name: PORT
+              value: "5000"
+          ports:
+            - containerPort: 5000
+              name: todo
