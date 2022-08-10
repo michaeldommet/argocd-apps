@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: todo-web
+  annotations:
+    networking.gke.io/load-balancer-type: "Internal"
 spec:
   ports:
     - port: 8080
@@ -26,7 +28,7 @@ spec:
         app: todo
     spec:
       containers:
-        - image: quay.apps.cloud.internal/eh2doec/todo-app:slim
+        - image: michaeldommet/flask-app:v3
           name: todo
           env:
             # Use secret in real usage

@@ -26,7 +26,7 @@ spec:
         app: todo
     spec:
       containers:
-        - image: quay.apps.cloud.internal/eh2doec/todo-app:slim
+        - image: michaeldommet/flask-app:v3
           name: todo
           env:
             # Use secret in real usage
